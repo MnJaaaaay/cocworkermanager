@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工人管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f6fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .version-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 10px;
+        }
+
+        .version-badge {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .author-info {
+            font-style: italic;
+        }
+
+        .import-export-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn-import {
+            background: #27ae60;
+        }
+
+        .btn-import:hover {
+            background: #229954;
+        }
+
+        .btn-export {
+            background: #e67e22;
+        }
+
+        .btn-export:hover {
+            background: #d35400;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .header .time {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-mini {
+            padding: 3px 6px;
+            font-size: 10px;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .summary {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .summary h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        /* 账号汇总简约样式 */
+        .summary-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .summary-card.available {
+            background: linear-gradient(135deg, #d5f4e6 0%, #a8e6cf 100%);
+            border-color: #27ae60;
+            color: #1e7e34;
+        }
+
+        .summary-card.busy {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-color: #e74c3c;
+            color: #c62828;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .summary-card h3 {
+            font-size: 1.2em;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        .account-status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .account-status-dot.available {
+            background: #27ae60;
+        }
+
+        .account-status-dot.busy {
+            background: #e74c3c;
+        }
+
+        .upcoming-tasks {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .upcoming-tasks h4 {
+            font-size: 0.85em;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .task-item {
+            background: white;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 6px;
+            font-size: 0.8em;
+            border-left: 3px solid #3498db;
+        }
+
+        .task-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .task-item.worker-task {
+            border-left-color: #3498db;
+        }
+
+        .task-item.scholar-task {
+            border-left-color: #9b59b6;
+        }
+
+        .task-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+
+        .task-time {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        /* 全局即将完成任务 - 实时动态 */
+        .global-upcoming {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .global-upcoming h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .realtime-indicator {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .task-progress-table {
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .task-progress-header {
+            background: #34495e;
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .task-progress-row {
+            padding: 12px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            align-items: center;
+            transition: background 0.3s ease;
+            cursor: pointer;
+        }
+
+        .task-progress-row:hover {
+            background: #f0f0f0;
+        }
+
+        .task-progress-row:last-child {
+            border-bottom: none;
+        }
+
+        /* 空闲工人/学徒高亮样式 */
+        .task-progress-row.available-highlight {
+            background: linear-gradient(135deg, #d5f4e6 0%, #a8e6cf 100%);
+            border-left: 4px solid #27ae60;
+            font-weight: bold;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        .task-progress-row.available-highlight:hover {
+            background: linear-gradient(135deg, #c8f2dc 0%, #9de0c1 100%);
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 5px rgba(39, 174, 96, 0.3); }
+            to { box-shadow: 0 0 15px rgba(39, 174, 96, 0.6); }
+        }
+
+        /* 即将完成任务样式 */
+        .task-progress-row.completing-task {
+            background: #fff9e6;
+            border-left: 4px solid #f39c12;
+        }
+
+        .task-progress-row.completing-task:hover {
+            background: #fff3d4;
+        }
+
+        .task-account {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 0.9em;
+        }
+
+        .task-worker {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .task-worker.worker-type {
+            color: #3498db;
+        }
+
+        .task-worker.scholar-type {
+            color: #9b59b6;
+        }
+
+        /* 空闲状态特殊样式 */
+        .task-worker.available-worker {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .task-worker.available-scholar {
+            color: #8e44ad;
+            font-weight: bold;
+        }
+
+        .task-name-cell {
+            color: #2c3e50;
+            font-size: 0.9em;
+        }
+
+        .task-name-cell.available-status {
+            color: #27ae60;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .task-time-cell {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .task-time-cell.urgent {
+            color: #e74c3c;
+        }
+
+        .task-time-cell.warning {
+            color: #f39c12;
+        }
+
+        .task-time-cell.normal {
+            color: #27ae60;
+        }
+
+        .task-time-cell.available {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .release-cell {
+            text-align: center;
+        }
+
+        .assign-task-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background 0.3s;
+            min-width: 40px;
+        }
+
+        .assign-task-btn:hover {
+            background: #229954;
+        }
+
+        .quick-release-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background 0.3s;
+            min-width: 40px;
+        }
+
+        .quick-release-btn:hover {
+            background: #c0392b;
+        }
+
+        .quick-release-btn.urgent {
+            background: #e74c3c;
+        }
+
+        .quick-release-btn.urgent:hover {
+            background: #c0392b;
+        }
+
+        .quick-release-btn.warning {
+            background: #f39c12;
+        }
+
+        .quick-release-btn.warning:hover {
+            background: #e67e22;
+        }
+
+        .quick-release-btn.normal {
+            background: #27ae60;
+        }
+
+        .quick-release-btn.normal:hover {
+            background: #229954;
+        }
+
+        .no-tasks-message {
+            text-align: center;
+            color: #95a5a6;
+            padding: 30px;
+            font-style: italic;
+        }
+
+        /* 工人进度条 */
+        .worker-progress {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .progress-bar.green {
+            background: linear-gradient(to right, #27ae60, #2ecc71);
+        }
+
+        .progress-bar.orange {
+            background: linear-gradient(to right, #f39c12, #e67e22);
+        }
+
+        .progress-bar.red {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+
+        /* 账号详情展开/折叠 */
+        .account-detail {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .account-detail.collapsed {
+            display: none;
+        }
+
+        .account-detail-header {
+            background: #34495e;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .account-detail-header:hover {
+            background: #2c3e50;
+        }
+
+        .account-detail-title {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .account-detail-content {
+            padding: 20px;
+        }
+
+        /* 放假状态 */
+        .worker-card.vacation {
+            background: #f8f9fa;
+            border-color: #95a5a6;
+            opacity: 0.7;
+        }
+
+        .worker-card.vacation .worker-name {
+            color: #95a5a6;
+        }
+
+        .vacation-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7em;
+        }
+
+        .vacation-btn:hover {
+            background: #7f8c8d;
+        }
+
+        .work-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7em;
+        }
+
+        .work-btn:hover {
+            background: #229954;
+        }
+
+        .edit-controls {
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .summary-card:hover .edit-controls {
+            opacity: 1;
+        }
+
+        .edit-input {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px 8px;
+            font-size: 1em;
+            flex: 1;
+        }
+
+        .accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+
+        .account-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        .account-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .account-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .workers-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .workers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .worker-card {
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+
+        .worker-card.available {
+            background: #d5f4e6;
+            border-color: #27ae60;
+        }
+
+        .worker-card.working {
+            background: #ffebee;
+            border-color: #e74c3c;
+        }
+
+        .worker-card .worker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .worker-name {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .worker-card.available .worker-name {
+            color: #27ae60;
+        }
+
+        .worker-card.working .worker-name {
+            color: #e74c3c;
+        }
+
+        .worker-info {
+            font-size: 0.8em;
+            color: #7f8c8d;
+        }
+
+        .worker-task {
+            margin-top: 5px;
+            font-size: 0.8em;
+        }
+
+        .release-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7em;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .form-actions .btn {
+            flex: 1;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header-top {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+
+            .header-info {
+                text-align: center;
+            }
+
+            .header-info h1 {
+                font-size: 1.6em;
+                line-height: 1.3;
+                margin-bottom: 8px;
+            }
+
+            .header-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.9em;
+                white-space: nowrap;
+            }
+
+            .version-info {
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+                text-align: center;
+                font-size: 0.85em;
+                line-height: 1.4;
+            }
+
+            .version-badge {
+                font-size: 0.75em;
+                padding: 3px 6px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .summary-card {
+                padding: 12px;
+                min-height: auto;
+            }
+
+            .summary-card h3 {
+                font-size: 1.1em;
+                margin: 0;
+            }
+
+            .account-simple-actions {
+                gap: 8px;
+            }
+
+            .task-btn {
+                font-size: 0.85em;
+                padding: 10px 12px;
+            }
+
+            .global-upcoming {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .task-progress-header,
+            .task-progress-row {
+                grid-template-columns: 1fr auto;
+                gap: 8px;
+                font-size: 0.75em;
+                padding: 8px 10px;
+            }
+
+            .assign-task-btn,
+            .quick-release-btn {
+                font-size: 0.7em;
+                padding: 4px 6px;
+                min-width: 60px;
+            }
+
+            .modal-content {
+                width: 95%;
+                max-width: 350px;
+                padding: 20px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标题栏 -->
+        <div class="header">
+            <div class="header-top">
+                <div class="header-info">
+                    <h1>📊 工人管理系统</h1>
+                    <div id="current-time" style="color: #7f8c8d; margin-top: 5px;"></div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn" onclick="addAccount()">
+                        ➕ 添加账号
+                    </button>
+                </div>
+            </div>
+            <div class="version-info">
+                <span class="version-badge">v1.3</span>
+                <span class="author-info">作者：路遥</span>
+            </div>
+        </div>
+
+        <!-- 全局实时动态面板 -->
+        <div class="global-upcoming">
+            <h2>
+                ⚡ 实时动态面板 
+                <span class="realtime-indicator">LIVE</span>
+            </h2>
+            <div class="task-progress-table">
+                <div class="task-progress-header">
+                    <div>账号</div>
+                    <div>剩余时间</div>
+                </div>
+                <div id="global-task-list">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 汇总面板 -->
+        <div class="summary">
+            <h2>📈 账号总览</h2>
+            <div class="summary-grid" id="summary-grid">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+
+        <!-- 账号详情 -->
+        <div id="accounts-details">
+            <!-- 动态生成 -->
+        </div>
+    </div>
+
+    <!-- 任务分配模态框 -->
+    <div class="modal hidden" id="task-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">分配任务</h3>
+            <div class="form-group">
+                <label>任务时长</label>
+                <div class="form-row">
+                    <div>
+                        <label style="font-size: 12px; color: #7f8c8d;">天数</label>
+                        <input type="number" class="form-input" id="task-days" value="0" min="0">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: #7f8c8d;">小时数</label>
+                        <input type="number" class="form-input" id="task-hours" value="1" min="1" max="23">
+                    </div>
+                </div>
+                <div style="margin-top: 10px; font-size: 14px; color: #7f8c8d;" id="total-time">
+                    总时长: 0天1小时
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-success" onclick="assignTask()">分配任务</button>
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div class="modal hidden" id="delete-modal">
+        <div class="modal-content">
+            <h3>🗑️ 删除账号</h3>
+            <p style="margin-bottom: 20px; color: #7f8c8d;">
+                确定要删除 "<strong id="delete-account-name"></strong>" 吗？<br>
+                此操作无法撤销，所有相关任务将被清除。
+            </p>
+            <div class="form-actions">
+                <button class="btn btn-danger" onclick="confirmDelete()">确认删除</button>
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let accounts = [];
+        let currentTime = new Date();
+        let selectedAccount = null;
+        let taskType = 'worker';
+        let editingAccountId = null;
+        let deleteAccountId = null;
+        let expandedAccounts = new Set(); // 记录展开的账号
+
+        // 初始化
+        function init() {
+            loadData();
+            updateTime();
+            setInterval(updateTime, 1000);
+            setInterval(checkTasks, 1000);
+            
+            // 绑定输入事件
+            document.getElementById('task-days').addEventListener('input', updateTotalTime);
+            document.getElementById('task-hours').addEventListener('input', updateTotalTime);
+        }
+
+        // 加载数据
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('workerProgressData');
+                if (saved) {
+                    accounts = JSON.parse(saved).map(account => ({
+                        ...account,
+                        workers: account.workers.map(worker => ({
+                            ...worker,
+                            isVacation: worker.isVacation || false,
+                            endTime: worker.endTime ? new Date(worker.endTime) : null
+                        })),
+                        scholars: account.scholars.map(scholar => ({
+                            ...scholar,
+                            isVacation: scholar.isVacation || false,
+                            endTime: scholar.endTime ? new Date(scholar.endTime) : null
+                        }))
+                    }));
+                } else {
+                    // 创建默认账号
+                    accounts = [
+                        { id: 1, name: '账号 1' },
+                        { id: 2, name: '账号 2' },
+                        { id: 3, name: '账号 3' }
+                    ].map(acc => ({
+                        ...acc,
+                        workers: Array.from({ length: 6 }, (_, i) => ({
+                            id: i + 1,
+                            isWorking: false,
+                            isVacation: false,
+                            taskName: '',
+                            endTime: null
+                        })),
+                        scholars: [{
+                            id: 1,
+                            isWorking: false,
+                            isVacation: false,
+                            taskName: '',
+                            endTime: null
+                        }]
+                    }));
+                }
+                render();
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                accounts = [];
+                render();
+            }
+        }
+
+        // 保存数据
+        function saveData() {
+            try {
+                localStorage.setItem('workerProgressData', JSON.stringify(accounts));
+            } catch (error) {
+                console.error('保存数据失败:', error);
+            }
+        }
+
+        // 更新时间
+        function updateTime() {
+            currentTime = new Date();
+            document.getElementById('current-time').textContent = 
+                `当前时间: ${currentTime.toLocaleString('zh-CN')}`;
+        }
+
+        // 检查任务状态
+        function checkTasks() {
+            let updated = false;
+            const now = new Date();
+            
+            accounts.forEach(account => {
+                account.workers.forEach(worker => {
+                    if (worker.isWorking && worker.endTime && now >= worker.endTime) {
+                        worker.isWorking = false;
+                        worker.taskName = '';
+                        worker.endTime = null;
+                        updated = true;
+                    }
+                });
+                
+                account.scholars.forEach(scholar => {
+                    if (scholar.isWorking && scholar.endTime && now >= scholar.endTime) {
+                        scholar.isWorking = false;
+                        scholar.taskName = '';
+                        scholar.endTime = null;
+                        updated = true;
+                    }
+                });
+            });
+            
+            if (updated) {
+                render();
+                saveData();
+            }
+        }
+
+        // 添加账号
+        function addAccount() {
+            const newId = Math.max(...accounts.map(a => a.id), 0) + 1;
+            const newAccount = {
+                id: newId,
+                name: `账号 ${newId}`,
+                workers: Array.from({ length: 6 }, (_, i) => ({
+                    id: i + 1,
+                    isWorking: false,
+                    isVacation: false,
+                    taskName: '',
+                    endTime: null
+                })),
+                scholars: [{
+                    id: 1,
+                    isWorking: false,
+                    isVacation: false,
+                    taskName: '',
+                    endTime: null
+                }]
+            };
+            accounts.push(newAccount);
+            render();
+            saveData();
+        }
+
+        // 删除账号
+        function deleteAccount(accountId) {
+            deleteAccountId = accountId;
+            const account = accounts.find(a => a.id === accountId);
+            document.getElementById('delete-account-name').textContent = account.name;
+            document.getElementById('delete-modal').classList.remove('hidden');
+        }
+
+        function confirmDelete() {
+            accounts = accounts.filter(a => a.id !== deleteAccountId);
+            expandedAccounts.delete(deleteAccountId);
+            closeDeleteModal();
+            render();
+            saveData();
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.add('hidden');
+            deleteAccountId = null;
+        }
+
+        // 编辑账号名称
+        function editAccountName(accountId) {
+            editingAccountId = accountId;
+            render();
+        }
+
+        function saveAccountName(accountId, newName) {
+            if (newName.trim()) {
+                const account = accounts.find(a => a.id === accountId);
+                if (account) {
+                    account.name = newName.trim();
+                }
+            }
+            editingAccountId = null;
+            render();
+            saveData();
+        }
+
+        function cancelEdit() {
+            editingAccountId = null;
+            render();
+        }
+
+        // 展开/折叠账号详情
+        function toggleAccountDetail(accountId) {
+            if (expandedAccounts.has(accountId)) {
+                expandedAccounts.delete(accountId);
+            } else {
+                expandedAccounts.add(accountId);
+            }
+            render();
+        }
+
+        // 任务管理
+        function openTaskModal(account, type) {
+            selectedAccount = account;
+            taskType = type;
+            document.getElementById('modal-title').textContent = 
+                `分配${type === 'worker' ? '工人' : '学者'}任务 - ${account.name}`;
+            document.getElementById('task-modal').classList.remove('hidden');
+            updateTotalTime();
+        }
+
+        function closeModal() {
+            document.getElementById('task-modal').classList.add('hidden');
+            selectedAccount = null;
+        }
+
+        function updateTotalTime() {
+            const days = parseInt(document.getElementById('task-days').value) || 0;
+            const hours = parseInt(document.getElementById('task-hours').value) || 1;
+            document.getElementById('total-time').textContent = `总时长: ${days}天${hours}小时`;
+        }
+
+        function assignTask() {
+            if (!selectedAccount) return;
+            
+            const days = parseInt(document.getElementById('task-days').value) || 0;
+            const hours = parseInt(document.getElementById('task-hours').value) || 1;
+            const totalMs = (days * 24 * 60 * 60 * 1000) + (hours * 60 * 60 * 1000);
+            const endTime = new Date(Date.now() + totalMs);
+            const taskName = `任务 ${days}天${hours}小时`;
+
+            const account = accounts.find(a => a.id === selectedAccount.id);
+            if (!account) return;
+
+            if (taskType === 'worker') {
+                const availableWorker = account.workers.find(w => !w.isWorking && !w.isVacation);
+                if (availableWorker) {
+                    availableWorker.isWorking = true;
+                    availableWorker.taskName = taskName;
+                    availableWorker.endTime = endTime;
+                }
+            } else {
+                const scholar = account.scholars[0];
+                if (!scholar.isWorking && !scholar.isVacation) {
+                    scholar.isWorking = true;
+                    scholar.taskName = taskName;
+                    scholar.endTime = endTime;
+                }
+            }
+
+            closeModal();
+            render();
+            saveData();
+        }
+
+        // 释放工人/学者
+        function releaseWorker(accountId, type, workerId) {
+            const account = accounts.find(a => a.id === accountId);
+            if (!account) return;
+
+            if (type === 'worker') {
+                const worker = account.workers.find(w => w.id === workerId);
+                if (worker) {
+                    worker.isWorking = false;
+                    worker.taskName = '';
+                    worker.endTime = null;
+                }
+            } else {
+                const scholar = account.scholars[0];
+                scholar.isWorking = false;
+                scholar.taskName = '';
+                scholar.endTime = null;
+            }
+
+            render();
+            saveData();
+        }
+
+        // 放假/开工功能
+        function toggleVacation(accountId, workerType, workerId) {
+            const account = accounts.find(a => a.id === accountId);
+            if (!account) return;
+
+            let worker;
+            if (workerType === 'worker') {
+                worker = account.workers.find(w => w.id === workerId);
+            } else {
+                worker = account.scholars[0];
+            }
+            
+            if (!worker) return;
+
+            // 如果正在工作，先释放任务
+            if (worker.isWorking) {
+                worker.isWorking = false;
+                worker.taskName = '';
+                worker.endTime = null;
+            }
+
+            // 切换放假状态
+            worker.isVacation = !worker.isVacation;
+
+            render();
+            saveData();
+        }
+
+        // 获取实时动态数据（空闲工人/学者 + 即将完成任务）
+        function getRealTimeData() {
+            const availableWorkers = [];
+            const completingTasks = [];
+            
+            accounts.forEach(account => {
+                // 获取空闲工人
+                account.workers.forEach(worker => {
+                    if (!worker.isWorking && !worker.isVacation) {
+                        availableWorkers.push({
+                            account: account.name,
+                            accountId: account.id,
+                            name: `工人${worker.id}`,
+                            workerId: worker.id,
+                            type: 'worker',
+                            status: 'available'
+                        });
+                    }
+                });
+                
+                // 获取空闲学者
+                account.scholars.forEach(scholar => {
+                    if (!scholar.isWorking && !scholar.isVacation) {
+                        availableWorkers.push({
+                            account: account.name,
+                            accountId: account.id,
+                            name: '学者1',
+                            workerId: 1,
+                            type: 'scholar',
+                            status: 'available'
+                        });
+                    }
+                });
+                
+                // 获取即将完成的任务
+                account.workers.forEach(worker => {
+                    if (worker.isWorking && worker.endTime && !worker.isVacation) {
+                        completingTasks.push({
+                            account: account.name,
+                            accountId: account.id,
+                            name: `工人${worker.id}`,
+                            workerId: worker.id,
+                            taskName: worker.taskName,
+                            endTime: worker.endTime,
+                            type: 'worker'
+                        });
+                    }
+                });
+                
+                account.scholars.forEach(scholar => {
+                    if (scholar.isWorking && scholar.endTime && !scholar.isVacation) {
+                        completingTasks.push({
+                            account: account.name,
+                            accountId: account.id,
+                            name: '学者1',
+                            workerId: 1,
+                            taskName: scholar.taskName,
+                            endTime: scholar.endTime,
+                            type: 'scholar'
+                        });
+                    }
+                });
+            });
+            
+            // 按结束时间排序即将完成的任务，取前3个
+            completingTasks.sort((a, b) => a.endTime - b.endTime);
+            
+            return {
+                availableWorkers,
+                completingTasks: completingTasks.slice(0, 3)
+            };
+        }
+
+        // 获取进度条颜色和进度
+        function getProgressInfo(endTime) {
+            if (!endTime) return { color: 'green', progress: 0 };
+            
+            const now = new Date();
+            const remaining = endTime - now;
+            const hours = remaining / (1000 * 60 * 60);
+            
+            let color = 'green';
+            if (hours > 24) {
+                color = 'red';
+            } else if (hours > 8) {
+                color = 'orange';
+            }
+            
+            // 简化进度计算
+            const progress = Math.max(0, Math.min(100, (1 - hours / 24) * 100));
+            
+            return { color, progress };
+        }
+
+        // 导入导出功能
+        function exportConfig() {
+            try {
+                const config = {
+                    version: "1.2",
+                    author: "路遥",
+                    exportTime: new Date().toISOString(),
+                    accounts: accounts
+                };
+                
+                const dataStr = JSON.stringify(config, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `工人进度配置_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert('✅ 配置文件导出成功！');
+            } catch (error) {
+                console.error('导出失败:', error);
+                alert('❌ 导出失败，请重试');
+            }
+        }
+
+        function importConfig(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    
+                    // 验证配置文件格式
+                    if (!config.accounts || !Array.isArray(config.accounts)) {
+                        throw new Error('配置文件格式不正确');
+                    }
+                    
+                    // 验证并补充缺失的字段
+                    const validatedAccounts = config.accounts.map(account => ({
+                        id: account.id || Date.now() + Math.random(),
+                        name: account.name || '未命名账号',
+                        workers: (account.workers || []).map((worker, index) => ({
+                            id: worker.id || (index + 1),
+                            isWorking: worker.isWorking || false,
+                            isVacation: worker.isVacation || false,
+                            taskName: worker.taskName || '',
+                            endTime: worker.endTime ? new Date(worker.endTime) : null
+                        })),
+                        scholars: (account.scholars || []).map((scholar, index) => ({
+                            id: scholar.id || 1,
+                            isWorking: scholar.isWorking || false,
+                            isVacation: scholar.isVacation || false,
+                            taskName: scholar.taskName || '',
+                            endTime: scholar.endTime ? new Date(scholar.endTime) : null
+                        }))
+                    }));
+                    
+                    // 确保每个账号都有6个工人和1个学者
+                    validatedAccounts.forEach(account => {
+                        // 补充工人至6个
+                        while (account.workers.length < 6) {
+                            account.workers.push({
+                                id: account.workers.length + 1,
+                                isWorking: false,
+                                isVacation: false,
+                                taskName: '',
+                                endTime: null
+                            });
+                        }
+                        
+                        // 确保有1个学者
+                        if (account.scholars.length === 0) {
+                            account.scholars.push({
+                                id: 1,
+                                isWorking: false,
+                                isVacation: false,
+                                taskName: '',
+                                endTime: null
+                            });
+                        }
+                    });
+                    
+                    // 确认导入
+                    const confirmMsg = `确定要导入配置吗？\n\n文件信息：\n- 账号数量：${validatedAccounts.length}\n- 导出时间：${config.exportTime ? new Date(config.exportTime).toLocaleString('zh-CN') : '未知'}\n- 版本：${config.version || '未知'}\n\n⚠️ 当前数据将被覆盖！`;
+                    
+                    if (confirm(confirmMsg)) {
+                        accounts = validatedAccounts;
+                        expandedAccounts.clear();
+                        render();
+                        saveData();
+                        alert('✅ 配置导入成功！');
+                    }
+                    
+                } catch (error) {
+                    console.error('导入失败:', error);
+                    alert(`❌ 导入失败：${error.message}\n\n请检查文件格式是否正确`);
+                }
+                
+                // 清空文件输入
+                event.target.value = '';
+            };
+            
+            reader.onerror = function() {
+                alert('❌ 文件读取失败，请重试');
+                event.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // 工具函数
+        function formatTimeRemaining(endTime) {
+            if (!endTime) return '';
+            const now = new Date();
+            const diff = endTime - now;
+            if (diff <= 0) return '已完成';
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            let result = '';
+            if (days > 0) {
+                result += `${days}d`;
+            }
+            if (hours > 0) {
+                result += `${hours}h`;
+            }
+            if (minutes > 0 || result === '') {
+                result += `${minutes}m`;
+            }
+            
+            return result;
+        }
+
+        function getAvailableCount(account, type) {
+            if (type === 'worker') {
+                const available = account.workers.filter(w => !w.isWorking && !w.isVacation).length;
+                return `${available}/6`;
+            } else {
+                const available = account.scholars.filter(s => !s.isWorking && !s.isVacation).length;
+                return `${available}/1`;
+            }
+        }
+
+        // 渲染界面
+        function render() {
+            renderGlobalUpcoming();
+            renderSummary();
+            renderAccountDetails();
+        }
+
+        function renderGlobalUpcoming() {
+            const globalTaskList = document.getElementById('global-task-list');
+            const realTimeData = getRealTimeData();
+            
+            if (realTimeData.availableWorkers.length === 0 && realTimeData.completingTasks.length === 0) {
+                globalTaskList.innerHTML = '<div class="no-tasks-message">暂无空闲工人/学者，也无进行中的任务</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            // 首先显示空闲的工人/学者（置顶高亮）
+            if (realTimeData.availableWorkers.length > 0) {
+                html += realTimeData.availableWorkers.map(worker => `
+                    <div class="task-progress-row available-highlight" onclick="openTaskModal(${JSON.stringify(accounts.find(a => a.id === worker.accountId)).replace(/"/g, '&quot;')}, '${worker.type}')" title="点击分配任务">
+                        <div class="task-account">${worker.account} - ${worker.name}</div>
+                        <div style="text-align: center;">
+                            <button class="assign-task-btn" onclick="event.stopPropagation(); openTaskModal(${JSON.stringify(accounts.find(a => a.id === worker.accountId)).replace(/"/g, '&quot;')}, '${worker.type}')">
+                                分配任务
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // 然后显示即将完成的任务（最多3条）- 去掉工人/学者显示和释放按钮
+            if (realTimeData.completingTasks.length > 0) {
+                html += realTimeData.completingTasks.map(task => {
+                    const remaining = task.endTime - new Date();
+                    const hours = remaining / (1000 * 60 * 60);
+                    
+                    let timeClass = 'normal';
+                    if (hours < 1) {
+                        timeClass = 'urgent';
+                    } else if (hours < 6) {
+                        timeClass = 'warning';
+                    }
+                    
+                    return `
+                        <div class="task-progress-row completing-task" onclick="releaseWorker(${task.accountId}, '${task.type}', ${task.workerId})" title="点击释放任务">
+                            <div class="task-account">${task.account}</div>
+                            <div class="task-time-cell ${timeClass}">${formatTimeRemaining(task.endTime)}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            globalTaskList.innerHTML = html;
+        }
+
+        function renderSummary() {
+            const summaryGrid = document.getElementById('summary-grid');
+            summaryGrid.innerHTML = accounts.map(account => {
+                const availableWorkers = account.workers.filter(w => !w.isWorking && !w.isVacation).length;
+                const availableScholars = account.scholars.filter(s => !s.isWorking && !s.isVacation).length;
+                
+                // 判断账号状态：有空闲资源为可用，否则为忙碌
+                const hasAvailable = availableWorkers > 0 || availableScholars > 0;
+                const statusClass = hasAvailable ? 'available' : 'busy';
+                const statusDot = hasAvailable ? 'available' : 'busy';
+                
+                return `
+                <div class="summary-card ${statusClass}" onclick="toggleAccountDetail(${account.id})">
+                    <h3>
+                        ${editingAccountId === account.id ? `
+                            <input type="text" class="edit-input" value="${account.name}" 
+                                   onkeypress="if(event.key==='Enter') saveAccountName(${account.id}, this.value)"
+                                   onblur="saveAccountName(${account.id}, this.value)" 
+                                   onfocus="this.select()" 
+                                   onclick="event.stopPropagation()" />
+                        ` : `
+                            <span class="account-status-dot ${statusDot}"></span>
+                            <span>${account.name}</span>
+                        `}
+                    </h3>
+                    ${editingAccountId !== account.id ? `
+                        <div style="position: absolute; top: 10px; right: 10px; opacity: 0; transition: opacity 0.3s;" 
+                             onmouseenter="this.style.opacity='1'" 
+                             onmouseleave="this.style.opacity='0'">
+                            <button class="btn btn-mini" onclick="event.stopPropagation(); editAccountName(${account.id})" title="编辑">✏️</button>
+                            <button class="btn btn-mini btn-danger" onclick="event.stopPropagation(); deleteAccount(${account.id})" title="删除">🗑️</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `}).join('');
+        }
+
+        function renderAccountDetails() {
+            const accountsDetails = document.getElementById('accounts-details');
+            accountsDetails.innerHTML = accounts.map(account => {
+                const isExpanded = expandedAccounts.has(account.id);
+                
+                if (!isExpanded) return '';
+                
+                const sortedWorkers = [...account.workers].sort((a, b) => {
+                    // 正在工作的工人优先，按剩余时间排序
+                    if (a.isWorking && b.isWorking) {
+                        return a.endTime - b.endTime;
+                    }
+                    // 正在工作的在前，空闲的在后
+                    if (a.isWorking && !b.isWorking) return -1;
+                    if (!a.isWorking && b.isWorking) return 1;
+                    // 都空闲时按ID排序
+                    return a.id - b.id;
+                });
+                
+                return `
+                <div class="account-detail">
+                    <div class="account-detail-header" onclick="toggleAccountDetail(${account.id})">
+                        <div class="account-detail-title">${account.name} - 详细信息</div>
+                        <div>▲ 收起</div>
+                    </div>
+                    <div class="account-detail-content">
+                        <div class="workers-section">
+                            <div class="section-title">👷 工人 (${getAvailableCount(account, 'worker')}) 
+                                <span style="font-size: 0.8em; color: #95a5a6; font-weight: normal;">- 按完成时间排序</span>
+                            </div>
+                            <div class="workers-grid">
+                                ${sortedWorkers.map(worker => {
+                                    const progressInfo = getProgressInfo(worker.endTime);
+                                    let cardClass = 'available';
+                                    if (worker.isVacation) {
+                                        cardClass = 'vacation';
+                                    } else if (worker.isWorking) {
+                                        cardClass = 'working';
+                                    }
+                                    
+                                    return `
+                                    <div class="worker-card ${cardClass}">
+                                        <div class="worker-header">
+                                            <div class="worker-name">工人 ${worker.id}</div>
+                                            <div style="display: flex; gap: 5px;">
+                                                ${worker.isWorking ? `
+                                                    <button class="release-btn" onclick="releaseWorker(${account.id}, 'worker', ${worker.id})">
+                                                        ➖
+                                                    </button>
+                                                ` : ''}
+                                                ${worker.isVacation ? `
+                                                    <button class="work-btn" onclick="toggleVacation(${account.id}, 'worker', ${worker.id})" title="开工">
+                                                        🔄
+                                                    </button>
+                                                ` : `
+                                                    <button class="vacation-btn" onclick="toggleVacation(${account.id}, 'worker', ${worker.id})" title="放假">
+                                                        😴
+                                                    </button>
+                                                `}
+                                            </div>
+                                        </div>
+                                        ${worker.isVacation ? `
+                                            <div class="worker-info">
+                                                <div style="color: #95a5a6; font-style: italic;">😴 放假中</div>
+                                            </div>
+                                        ` : worker.isWorking ? `
+                                            <div class="worker-info">
+                                                <div>${worker.taskName}</div>
+                                                <div class="worker-progress">
+                                                    <div class="progress-bar ${progressInfo.color}" style="width: ${progressInfo.progress}%"></div>
+                                                </div>
+                                                <div>⏰ ${formatTimeRemaining(worker.endTime)}</div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `}).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="workers-section">
+                            <div class="section-title">🎓 学者 (${getAvailableCount(account, 'scholar')})</div>
+                            <div class="worker-card ${account.scholars[0].isVacation ? 'vacation' : (account.scholars[0].isWorking ? 'working' : 'available')}">
+                                <div class="worker-header">
+                                    <div class="worker-name">学者 1</div>
+                                    <div style="display: flex; gap: 5px;">
+                                        ${account.scholars[0].isWorking ? `
+                                            <button class="release-btn" onclick="releaseWorker(${account.id}, 'scholar', 1)">
+                                                ➖
+                                            </button>
+                                        ` : ''}
+                                        ${account.scholars[0].isVacation ? `
+                                            <button class="work-btn" onclick="toggleVacation(${account.id}, 'scholar', 1)" title="开工">
+                                                🔄
+                                            </button>
+                                        ` : `
+                                            <button class="vacation-btn" onclick="toggleVacation(${account.id}, 'scholar', 1)" title="放假">
+                                                😴
+                                            </button>
+                                        `}
+                                    </div>
+                                </div>
+                                ${account.scholars[0].isVacation ? `
+                                    <div class="worker-info">
+                                        <div style="color: #95a5a6; font-style: italic;">😴 放假中</div>
+                                    </div>
+                                ` : account.scholars[0].isWorking ? `
+                                    <div class="worker-info">
+                                        <div>${account.scholars[0].taskName}</div>
+                                        <div class="worker-progress">
+                                            <div class="progress-bar ${getProgressInfo(account.scholars[0].endTime).color}" style="width: ${getProgressInfo(account.scholars[0].endTime).progress}%"></div>
+                                        </div>
+                                        <div>⏰ ${formatTimeRemaining(account.scholars[0].endTime)}</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
